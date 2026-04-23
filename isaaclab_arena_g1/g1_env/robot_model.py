@@ -13,6 +13,11 @@ import pinocchio as pin
 from isaaclab_arena_g1.g1_env.g1_supplemental_info import G1SupplementalInfo
 
 
+# TODO: Refactor RobotModel and ReducedRobotModel out of isaaclab_arena_g1 into a
+# shared package (e.g. isaaclab_arena/robot_model/). These classes are robot-agnostic
+# and are already reused by H2. The G1SupplementalInfo type hint should become a
+# protocol or base class (e.g. RobotSupplementalInfo) so the dependency on
+# isaaclab_arena_g1 is removed.
 class RobotModel:
     def __init__(
         self,
@@ -20,6 +25,7 @@ class RobotModel:
         asset_path,
         set_floating_base=False,
         supplemental_info: G1SupplementalInfo | None = None,
+        joints_order_path: str | None = None,
     ):
         self.pinocchio_wrapper = pin.RobotWrapper.BuildFromURDF(
             filename=urdf_path,
@@ -29,7 +35,10 @@ class RobotModel:
 
         self.is_floating_base_model = set_floating_base
 
-        joints_order_path = os.path.join(os.path.dirname(__file__), "config/loco_manip_g1_joints_order_43dof.yaml")
+        if joints_order_path is None:
+            joints_order_path = os.path.join(
+                os.path.dirname(__file__), "config/loco_manip_g1_joints_order_43dof.yaml"
+            )
 
         with open(joints_order_path) as f:
             self.wbc_g1_joints_order = yaml.safe_load(f)
