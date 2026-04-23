@@ -1,0 +1,817 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "URDF USD Converter v0.1.0"
+    }
+    defaultPrim = "H2"
+    doc = """Generated from Composed Stage of root layer /tmp/tmp5tjy19j_/H2.usdc
+
+
+Generated from Composed Stage of root layer /workspaces/isaaclab_arena/isaaclab_arena_h2/assets/usdex/H2.usdc
+
+
+Generated from Composed Stage of root layer /workspaces/isaaclab_arena/isaaclab_arena_h2/assets/temp/H2_with_hands.usd
+
+
+Generated from Composed Stage of root layer /workspaces/isaaclab_arena/isaaclab_arena_h2/assets/H2_with_hands/payloads/base.usd
+"""
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    subLayers = [
+        @./physics.usda@
+    ]
+    upAxis = "Z"
+)
+
+over "H2"
+{
+    over "Geometry"
+    {
+        over "pelvis" (
+            delete apiSchemas = ["NewtonArticulationRootAPI"]
+            prepend apiSchemas = ["PhysxArticulationAPI"]
+        )
+        {
+            bool physxArticulation:enabledSelfCollisions = 0
+
+            over "waist_yaw_link"
+            {
+                over "waist_roll_link"
+                {
+                    over "torso_link"
+                    {
+                        over "head_pitch_link"
+                        {
+                            over "head_yaw_link"
+                            {
+                                over "head_yaw_link"
+                                {
+                                }
+
+                                over "head_yaw_link_1"
+                                {
+                                }
+                            }
+
+                            over "head_pitch_link"
+                            {
+                            }
+                        }
+
+                        over "right_shoulder_pitch_link"
+                        {
+                            over "right_shoulder_roll_link"
+                            {
+                                over "right_shoulder_yaw_link"
+                                {
+                                    over "right_elbow_link"
+                                    {
+                                        over "right_wrist_roll_link"
+                                        {
+                                            over "right_wrist_pitch_link"
+                                            {
+                                                over "right_wrist_yaw_link"
+                                                {
+                                                    over "right_hand_palm_link"
+                                                    {
+                                                        over "right_hand_thumb_0_link"
+                                                        {
+                                                            over "right_hand_thumb_1_link"
+                                                            {
+                                                                over "right_hand_thumb_2_link"
+                                                                {
+                                                                    over "right_hand_thumb_2_link"
+                                                                    {
+                                                                    }
+
+                                                                    over "right_hand_thumb_2_link_1"
+                                                                    {
+                                                                    }
+                                                                }
+
+                                                                over "right_hand_thumb_1_link"
+                                                                {
+                                                                }
+
+                                                                over "box"
+                                                                {
+                                                                }
+                                                            }
+
+                                                            over "right_hand_thumb_0_link"
+                                                            {
+                                                            }
+
+                                                            over "right_hand_thumb_0_link_1"
+                                                            {
+                                                            }
+                                                        }
+
+                                                        over "right_hand_middle_0_link"
+                                                        {
+                                                            over "right_hand_middle_1_link"
+                                                            {
+                                                                over "right_hand_middle_1_link"
+                                                                {
+                                                                }
+
+                                                                over "right_hand_middle_1_link_1"
+                                                                {
+                                                                }
+                                                            }
+
+                                                            over "right_hand_middle_0_link"
+                                                            {
+                                                            }
+
+                                                            over "right_hand_middle_0_link_1"
+                                                            {
+                                                            }
+                                                        }
+
+                                                        over "right_hand_index_0_link"
+                                                        {
+                                                            over "right_hand_index_1_link"
+                                                            {
+                                                                over "right_hand_index_1_link"
+                                                                {
+                                                                }
+
+                                                                over "right_hand_index_1_link_1"
+                                                                {
+                                                                }
+                                                            }
+
+                                                            over "right_hand_index_0_link"
+                                                            {
+                                                            }
+
+                                                            over "right_hand_index_0_link_1"
+                                                            {
+                                                            }
+                                                        }
+
+                                                        over "right_hand_palm_link"
+                                                        {
+                                                        }
+
+                                                        over "right_hand_palm_link_1"
+                                                        {
+                                                        }
+                                                    }
+
+                                                    over "right_wrist_yaw_link"
+                                                    {
+                                                    }
+
+                                                    over "right_wrist_yaw_link_1"
+                                                    {
+                                                    }
+                                                }
+
+                                                over "right_wrist_pitch_link"
+                                                {
+                                                }
+                                            }
+
+                                            over "right_wrist_roll_link"
+                                            {
+                                            }
+                                        }
+
+                                        over "right_elbow_link"
+                                        {
+                                        }
+
+                                        over "right_elbow_link_1"
+                                        {
+                                        }
+                                    }
+
+                                    over "right_shoulder_yaw_link"
+                                    {
+                                    }
+
+                                    over "right_shoulder_yaw_link_1"
+                                    {
+                                    }
+                                }
+
+                                over "right_shoulder_roll_link"
+                                {
+                                }
+
+                                over "right_shoulder_roll_link_1"
+                                {
+                                }
+                            }
+
+                            over "right_shoulder_pitch_link"
+                            {
+                            }
+
+                            over "right_shoulder_pitch_link_1"
+                            {
+                            }
+                        }
+
+                        over "left_shoulder_pitch_link"
+                        {
+                            over "left_shoulder_roll_link"
+                            {
+                                over "left_shoulder_yaw_link"
+                                {
+                                    over "left_elbow_link"
+                                    {
+                                        over "left_wrist_roll_link"
+                                        {
+                                            over "left_wrist_pitch_link"
+                                            {
+                                                over "left_wrist_yaw_link"
+                                                {
+                                                    over "left_hand_palm_link"
+                                                    {
+                                                        over "left_hand_thumb_0_link"
+                                                        {
+                                                            over "left_hand_thumb_1_link"
+                                                            {
+                                                                over "left_hand_thumb_2_link"
+                                                                {
+                                                                    over "left_hand_thumb_2_link"
+                                                                    {
+                                                                    }
+
+                                                                    over "left_hand_thumb_2_link_1"
+                                                                    {
+                                                                    }
+                                                                }
+
+                                                                over "left_hand_thumb_1_link"
+                                                                {
+                                                                }
+
+                                                                over "box"
+                                                                {
+                                                                }
+                                                            }
+
+                                                            over "left_hand_thumb_0_link"
+                                                            {
+                                                            }
+
+                                                            over "left_hand_thumb_0_link_1"
+                                                            {
+                                                            }
+                                                        }
+
+                                                        over "left_hand_middle_0_link"
+                                                        {
+                                                            over "left_hand_middle_1_link"
+                                                            {
+                                                                over "left_hand_middle_1_link"
+                                                                {
+                                                                }
+
+                                                                over "left_hand_middle_1_link_1"
+                                                                {
+                                                                }
+                                                            }
+
+                                                            over "left_hand_middle_0_link"
+                                                            {
+                                                            }
+
+                                                            over "left_hand_middle_0_link_1"
+                                                            {
+                                                            }
+                                                        }
+
+                                                        over "left_hand_index_0_link"
+                                                        {
+                                                            over "left_hand_index_1_link"
+                                                            {
+                                                                over "left_hand_index_1_link"
+                                                                {
+                                                                }
+
+                                                                over "left_hand_index_1_link_1"
+                                                                {
+                                                                }
+                                                            }
+
+                                                            over "left_hand_index_0_link"
+                                                            {
+                                                            }
+
+                                                            over "left_hand_index_0_link_1"
+                                                            {
+                                                            }
+                                                        }
+
+                                                        over "left_hand_palm_link"
+                                                        {
+                                                        }
+
+                                                        over "left_hand_palm_link_1"
+                                                        {
+                                                        }
+                                                    }
+
+                                                    over "left_wrist_yaw_link"
+                                                    {
+                                                    }
+
+                                                    over "left_wrist_yaw_link_1"
+                                                    {
+                                                    }
+                                                }
+
+                                                over "left_wrist_pitch_link"
+                                                {
+                                                }
+                                            }
+
+                                            over "left_wrist_roll_link"
+                                            {
+                                            }
+                                        }
+
+                                        over "left_elbow_link"
+                                        {
+                                        }
+
+                                        over "left_elbow_link_1"
+                                        {
+                                        }
+                                    }
+
+                                    over "left_shoulder_yaw_link"
+                                    {
+                                    }
+
+                                    over "left_shoulder_yaw_link_1"
+                                    {
+                                    }
+                                }
+
+                                over "left_shoulder_roll_link"
+                                {
+                                }
+
+                                over "left_shoulder_roll_link_1"
+                                {
+                                }
+                            }
+
+                            over "left_shoulder_pitch_link"
+                            {
+                            }
+
+                            over "left_shoulder_pitch_link_1"
+                            {
+                            }
+                        }
+
+                        over "torso_link"
+                        {
+                        }
+
+                        over "torso_link_1"
+                        {
+                        }
+                    }
+
+                    over "waist_roll_link"
+                    {
+                    }
+                }
+
+                over "waist_yaw_link"
+                {
+                }
+            }
+
+            over "left_hip_pitch_link"
+            {
+                over "left_hip_roll_link"
+                {
+                    over "left_hip_yaw_link"
+                    {
+                        over "left_knee_link"
+                        {
+                            over "left_ankle_roll_link"
+                            {
+                                over "left_ankle_pitch_link"
+                                {
+                                    over "left_ankle_pitch_link"
+                                    {
+                                    }
+
+                                    over "left_ankle_pitch_link_1"
+                                    {
+                                    }
+                                }
+
+                                over "left_ankle_roll_link"
+                                {
+                                }
+                            }
+
+                            over "left_knee_link"
+                            {
+                            }
+
+                            over "cylinder"
+                            {
+                            }
+                        }
+
+                        over "left_hip_yaw_link"
+                        {
+                        }
+
+                        over "left_hip_yaw_link_1"
+                        {
+                        }
+                    }
+
+                    over "left_hip_roll_link"
+                    {
+                    }
+
+                    over "sphere"
+                    {
+                    }
+                }
+
+                over "left_hip_pitch_link"
+                {
+                }
+            }
+
+            over "right_hip_pitch_link"
+            {
+                over "right_hip_roll_link"
+                {
+                    over "right_hip_yaw_link"
+                    {
+                        over "right_knee_link"
+                        {
+                            over "right_ankle_roll_link"
+                            {
+                                over "right_ankle_pitch_link"
+                                {
+                                    over "right_ankle_pitch_link"
+                                    {
+                                    }
+
+                                    over "right_ankle_pitch_link_1"
+                                    {
+                                    }
+                                }
+
+                                over "right_ankle_roll_link"
+                                {
+                                }
+                            }
+
+                            over "right_knee_link"
+                            {
+                            }
+
+                            over "cylinder"
+                            {
+                            }
+                        }
+
+                        over "right_hip_yaw_link"
+                        {
+                        }
+
+                        over "right_hip_yaw_link_1"
+                        {
+                        }
+                    }
+
+                    over "right_hip_roll_link"
+                    {
+                    }
+
+                    over "sphere"
+                    {
+                    }
+                }
+
+                over "right_hip_pitch_link"
+                {
+                }
+            }
+
+            over "pelvis"
+            {
+            }
+
+            over "pelvis_1"
+            {
+            }
+        }
+    }
+
+    over "Physics"
+    {
+        over "waist_yaw_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "waist_roll_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "waist_pitch_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "head_pitch_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "head_yaw_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "right_shoulder_pitch_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "right_shoulder_roll_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "right_shoulder_yaw_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "right_elbow_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "right_wrist_roll_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "right_wrist_pitch_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "right_wrist_yaw_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "right_hand_thumb_0_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "right_hand_thumb_1_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "right_hand_thumb_2_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "right_hand_middle_0_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "right_hand_middle_1_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "right_hand_index_0_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "right_hand_index_1_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "left_shoulder_pitch_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "left_shoulder_roll_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "left_shoulder_yaw_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "left_elbow_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "left_wrist_roll_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "left_wrist_pitch_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "left_wrist_yaw_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "left_hand_thumb_0_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "left_hand_thumb_1_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "left_hand_thumb_2_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "left_hand_middle_0_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "left_hand_middle_1_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "left_hand_index_0_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "left_hand_index_1_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "left_hip_pitch_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "left_hip_roll_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "left_hip_yaw_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "left_knee_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "left_ankle_roll_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "left_ankle_pitch_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "right_hip_pitch_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "right_hip_roll_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "right_hip_yaw_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "right_knee_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "right_ankle_roll_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "right_ankle_pitch_joint" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "root_joint"
+        {
+        }
+
+        over "right_hand_palm_joint"
+        {
+        }
+
+        over "left_hand_palm_joint"
+        {
+        }
+    }
+
+    over "fix_base_joint"
+    {
+    }
+
+    over "Materials"
+    {
+    }
+
+    over "VisualMaterials"
+    {
+    }
+}
+

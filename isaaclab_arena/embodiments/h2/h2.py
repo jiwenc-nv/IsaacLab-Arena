@@ -1,0 +1,410 @@
+# Copyright (c) 2026, The Isaac Lab Arena Project Developers (https://github.com/isaac-sim/IsaacLab-Arena/blob/main/CONTRIBUTORS.md).
+# All rights reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+"""Unitree H2 embodiment with PinkIK upper-body control and fixed lower body."""
+
+import os
+
+import isaaclab.envs.mdp as base_mdp
+import isaaclab.sim as sim_utils
+from isaaclab.actuators import IdealPDActuatorCfg
+from isaaclab.assets.articulation.articulation_cfg import ArticulationCfg
+from isaaclab.managers import EventTermCfg as EventTerm
+from isaaclab.managers import ObservationGroupCfg as ObsGroup
+from isaaclab.managers import ObservationTermCfg as ObsTerm
+from isaaclab.managers import SceneEntityCfg
+from isaaclab.managers.action_manager import ActionTermCfg
+from isaaclab.sensors import CameraCfg, TiledCameraCfg
+from isaaclab.utils import configclass
+from isaaclab_teleop import XrCfg
+from isaaclab_teleop.xr_cfg import XrAnchorRotationMode
+
+import isaaclab_arena.terms.transforms as transforms_terms
+from isaaclab_arena.assets.register import register_asset
+from isaaclab_arena.embodiments.common.arm_mode import ArmMode
+from isaaclab_arena.embodiments.embodiment_base import EmbodimentBase
+from isaaclab_arena.terms.events import reset_all_articulation_joints
+from isaaclab_arena.utils.pose import Pose
+from isaaclab_arena_h2.h2_env.mdp.actions.h2_pink_action_cfg import H2PinkActionCfg
+
+# TODO: The USD/URDF path resolution relies on probing multiple filesystem
+# candidates. This should be replaced by a proper asset registry or Nucleus
+# hosting once the H2 assets have a permanent home.
+def _resolve_h2_usd_path() -> str:
+    """Resolve the H2 USD path from env var or common locations.
+
+    The UrdfConverter produces ``H2/H2.usda`` inside the output directory,
+    so the candidates check both ``.usd`` and ``.usda`` variants and the
+    ``H2/`` subdirectory that the converter creates.
+    """
+    env_path = os.environ.get("H2_USD_PATH")
+    if env_path:
+        return env_path
+
+    # Locate the isaaclab_arena_h2 package on disk so paths work regardless of cwd
+    try:
+        import isaaclab_arena_h2
+
+        pkg_root = os.path.dirname(os.path.abspath(isaaclab_arena_h2.__file__))
+    except ImportError:
+        pkg_root = None
+
+    candidates = []
+    if pkg_root:
+        assets_dir = os.path.join(pkg_root, "assets")
+        candidates += [
+            os.path.join(assets_dir, "H2_with_hands", "H2_with_hands.usda"),
+            os.path.join(assets_dir, "H2_with_hands", "H2_with_hands.usd"),
+            os.path.join(assets_dir, "H2", "H2.usda"),
+            os.path.join(assets_dir, "H2", "H2.usd"),
+            os.path.join(assets_dir, "H2.usda"),
+            os.path.join(assets_dir, "H2.usd"),
+        ]
+
+    candidates += [
+        "/robot_menagerie/unitree/h2/usd/H2.usd",
+        os.path.expanduser("~/repo/robot_menagerie/unitree/h2/usd/H2.usd"),
+    ]
+
+    for p in candidates:
+        p = os.path.realpath(p)
+        if os.path.isfile(p):
+            return p
+
+    return candidates[0] if candidates else "H2.usd"
+
+
+H2_USD_PATH = _resolve_h2_usd_path()
+
+
+# TODO: PD gains are rough estimates based on URDF effort limits and G1 values.
+# Tune stiffness/damping per-joint on real hardware or with system identification.
+@configclass
+class H2SceneCfg:
+    """Scene configuration for the Unitree H2 with fixed lower body."""
+
+    robot: ArticulationCfg = ArticulationCfg(
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=H2_USD_PATH,
+            activate_contact_sensors=True,
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                disable_gravity=False,
+                retain_accelerations=False,
+                linear_damping=0.0,
+                angular_damping=0.0,
+                max_linear_velocity=1000.0,
+                max_angular_velocity=1000.0,
+                max_depenetration_velocity=1.0,
+                solver_position_iteration_count=4,
+                solver_velocity_iteration_count=0,
+            ),
+            articulation_props=sim_utils.ArticulationRootPropertiesCfg(
+                enabled_self_collisions=False,
+                solver_position_iteration_count=4,
+                solver_velocity_iteration_count=0,
+            ),
+        ),
+        prim_path="/World/envs/env_.*/Robot",
+        init_state=ArticulationCfg.InitialStateCfg(
+            pos=(0.8, -1.38, 1.05),
+            rot=(0.0, 0.0, 1.0, 0.0),
+            joint_pos={
+                # Legs: slight crouch for a stable standing pose
+                "left_hip_pitch_joint": -0.1,
+                "left_hip_roll_joint": 0.0,
+                "left_hip_yaw_joint": 0.0,
+                "left_knee_joint": 0.3,
+                "left_ankle_roll_joint": 0.0,
+                "left_ankle_pitch_joint": -0.2,
+                "right_hip_pitch_joint": -0.1,
+                "right_hip_roll_joint": 0.0,
+                "right_hip_yaw_joint": 0.0,
+                "right_knee_joint": 0.3,
+                "right_ankle_roll_joint": 0.0,
+                "right_ankle_pitch_joint": -0.2,
+                # Waist: upright
+                "waist_yaw_joint": 0.0,
+                "waist_roll_joint": 0.0,
+                "waist_pitch_joint": 0.0,
+                # Head: forward
+                "head_pitch_joint": 0.0,
+                "head_yaw_joint": 0.0,
+                # Arms: relaxed at sides
+                "left_shoulder_pitch_joint": 0.0,
+                "left_shoulder_roll_joint": 0.0,
+                "left_shoulder_yaw_joint": 0.0,
+                "left_elbow_joint": 0.0,
+                "left_wrist_roll_joint": 0.0,
+                "left_wrist_pitch_joint": 0.0,
+                "left_wrist_yaw_joint": 0.0,
+                "right_shoulder_pitch_joint": 0.0,
+                "right_shoulder_roll_joint": 0.0,
+                "right_shoulder_yaw_joint": 0.0,
+                "right_elbow_joint": 0.0,
+                "right_wrist_roll_joint": 0.0,
+                "right_wrist_pitch_joint": 0.0,
+                "right_wrist_yaw_joint": 0.0,
+            },
+            joint_vel={".*": 0.0},
+        ),
+        actuators={
+            "legs": IdealPDActuatorCfg(
+                joint_names_expr=[
+                    ".*_hip_yaw_joint",
+                    ".*_hip_roll_joint",
+                    ".*_hip_pitch_joint",
+                    ".*_knee_joint",
+                ],
+                effort_limit={
+                    ".*_hip_yaw_joint": 360.0,
+                    ".*_hip_roll_joint": 360.0,
+                    ".*_hip_pitch_joint": 360.0,
+                    ".*_knee_joint": 360.0,
+                },
+                velocity_limit={
+                    ".*_hip_yaw_joint": 20.0,
+                    ".*_hip_roll_joint": 20.0,
+                    ".*_hip_pitch_joint": 20.0,
+                    ".*_knee_joint": 20.0,
+                },
+                stiffness={
+                    ".*_hip_yaw_joint": 200.0,
+                    ".*_hip_roll_joint": 200.0,
+                    ".*_hip_pitch_joint": 200.0,
+                    ".*_knee_joint": 400.0,
+                },
+                damping={
+                    ".*_hip_yaw_joint": 4.0,
+                    ".*_hip_roll_joint": 4.0,
+                    ".*_hip_pitch_joint": 4.0,
+                    ".*_knee_joint": 6.0,
+                },
+                armature=0.03,
+            ),
+            "feet": IdealPDActuatorCfg(
+                joint_names_expr=[".*_ankle_roll_joint", ".*_ankle_pitch_joint"],
+                stiffness=40.0,
+                damping=2.0,
+                effort_limit=67.0,
+                velocity_limit=100.0,
+                armature=0.03,
+                friction=0.03,
+            ),
+            "waist": IdealPDActuatorCfg(
+                joint_names_expr=["waist_.*_joint"],
+                effort_limit={
+                    "waist_yaw_joint": 120.0,
+                    "waist_roll_joint": 180.0,
+                    "waist_pitch_joint": 180.0,
+                },
+                velocity_limit=28.0,
+                stiffness=250.0,
+                damping=5.0,
+                armature=0.03,
+                friction=0.03,
+            ),
+            "head": IdealPDActuatorCfg(
+                joint_names_expr=["head_.*_joint"],
+                effort_limit=50.0,
+                velocity_limit=10.0,
+                stiffness=40.0,
+                damping=2.0,
+                armature=0.03,
+                friction=0.03,
+            ),
+            "arms": IdealPDActuatorCfg(
+                joint_names_expr=[
+                    ".*_shoulder_pitch_joint",
+                    ".*_shoulder_roll_joint",
+                    ".*_shoulder_yaw_joint",
+                    ".*_elbow_joint",
+                    ".*_wrist_.*_joint",
+                ],
+                effort_limit={
+                    ".*_shoulder_pitch_joint": 120.0,
+                    ".*_shoulder_roll_joint": 54.0,
+                    ".*_shoulder_yaw_joint": 54.0,
+                    ".*_elbow_joint": 54.0,
+                    ".*_wrist_roll_joint": 54.0,
+                    ".*_wrist_pitch_joint": 25.0,
+                    ".*_wrist_yaw_joint": 25.0,
+                },
+                velocity_limit={
+                    ".*_shoulder_pitch_joint": 28.0,
+                    ".*_shoulder_roll_joint": 34.0,
+                    ".*_shoulder_yaw_joint": 34.0,
+                    ".*_elbow_joint": 34.0,
+                    ".*_wrist_roll_joint": 34.0,
+                    ".*_wrist_pitch_joint": 50.0,
+                    ".*_wrist_yaw_joint": 50.0,
+                },
+                stiffness={
+                    ".*_shoulder_pitch_joint": 100.0,
+                    ".*_shoulder_roll_joint": 100.0,
+                    ".*_shoulder_yaw_joint": 40.0,
+                    ".*_elbow_joint": 40.0,
+                    ".*_wrist_.*_joint": 20.0,
+                },
+                damping={
+                    ".*_shoulder_pitch_joint": 5.0,
+                    ".*_shoulder_roll_joint": 5.0,
+                    ".*_shoulder_yaw_joint": 2.0,
+                    ".*_elbow_joint": 2.0,
+                    ".*_wrist_.*_joint": 2.0,
+                },
+                armature=0.03,
+                friction=0.03,
+            ),
+            "hands": IdealPDActuatorCfg(
+                joint_names_expr=[".*_hand_.*"],
+                effort_limit=5.0,
+                velocity_limit=10.0,
+                stiffness=4.0,
+                damping=0.5,
+                armature=0.03,
+                friction=0.03,
+            ),
+        },
+    )
+
+
+# TODO: Camera offset is approximate -- measure from H2 CAD or calibrate in sim.
+_DEFAULT_H2_CAMERA_OFFSET = Pose(
+    position_xyz=(0.04, 0.0, 0.45), rotation_xyzw=(-0.62721, 0.62721, -0.32651, 0.32651)
+)
+
+
+@configclass
+class H2CameraCfg:
+    """Camera configuration for the H2 robot (mounted on head)."""
+
+    robot_head_cam: CameraCfg | TiledCameraCfg = None
+
+    def __post_init__(self):
+        is_tiled_camera = getattr(self, "_is_tiled_camera", False)
+        camera_offset = getattr(self, "_camera_offset", _DEFAULT_H2_CAMERA_OFFSET)
+
+        CameraClass = TiledCameraCfg if is_tiled_camera else CameraCfg
+        OffsetClass = CameraClass.OffsetCfg
+
+        common_kwargs = dict(
+            prim_path="{ENV_REGEX_NS}/Robot/head_yaw_link/RobotHeadCam",
+            update_period=0.0,
+            height=480,
+            width=640,
+            data_types=["rgb"],
+            spawn=sim_utils.PinholeCameraCfg(
+                focal_length=15,
+                clipping_range=(0.1, 5),
+            ),
+        )
+        offset = OffsetClass(
+            pos=camera_offset.position_xyz,
+            rot=camera_offset.rotation_xyzw,
+            convention="ros",
+        )
+        self.robot_head_cam = CameraClass(offset=offset, **common_kwargs)
+
+
+@configclass
+class H2PinkObservationsCfg:
+    """Observation specifications for H2 PinkIK embodiment."""
+
+    @configclass
+    class PolicyCfg(ObsGroup):
+        actions = ObsTerm(func=base_mdp.last_action)
+        robot_joint_pos = ObsTerm(
+            func=base_mdp.joint_pos,
+            params={"asset_cfg": SceneEntityCfg("robot")},
+        )
+        right_wrist_pose_pelvis_frame = ObsTerm(
+            func=transforms_terms.transform_pose_from_world_to_target_frame,
+            params={
+                "asset_cfg": SceneEntityCfg("robot"),
+                "target_link_name": "right_wrist_yaw_link",
+                "target_frame_name": "pelvis",
+            },
+        )
+        left_wrist_pose_pelvis_frame = ObsTerm(
+            func=transforms_terms.transform_pose_from_world_to_target_frame,
+            params={
+                "asset_cfg": SceneEntityCfg("robot"),
+                "target_link_name": "left_wrist_yaw_link",
+                "target_frame_name": "pelvis",
+            },
+        )
+
+        def __post_init__(self):
+            self.enable_corruption = False
+            self.concatenate_terms = False
+
+    policy: PolicyCfg = PolicyCfg()
+
+
+@configclass
+class H2PinkActionCfgWrapper:
+    """Action specifications for the H2 PinkIK embodiment."""
+
+    h2_action: ActionTermCfg = H2PinkActionCfg(asset_name="robot", joint_names=[".*"])
+
+
+@configclass
+class H2EventCfg:
+    """Event configuration for the H2."""
+
+    reset_all = EventTerm(func=reset_all_articulation_joints, mode="reset")
+
+
+class H2EmbodimentBase(EmbodimentBase):
+    """Base class for H2 embodiments."""
+
+    name = "h2"
+    default_arm_mode = ArmMode.DUAL_ARM
+
+    def __init__(
+        self,
+        enable_cameras: bool = False,
+        initial_pose: Pose | None = None,
+        concatenate_observation_terms: bool = False,
+        arm_mode: ArmMode | None = None,
+    ):
+        super().__init__(enable_cameras, initial_pose, concatenate_observation_terms, arm_mode)
+        self.scene_config = H2SceneCfg()
+        self.camera_config = H2CameraCfg()
+
+        # TODO: XR anchor offsets are copied from G1 and need tuning for the
+        # H2's different torso height and head position.
+        self.xr: XrCfg = XrCfg(
+            anchor_pos=(0.0, 0.0, -1.0),
+            anchor_rot=(0.0, 0.0, -0.70711, 0.70711),
+            anchor_prim_path="/World/envs/env_0/Robot/pelvis",
+            anchor_rotation_mode=XrAnchorRotationMode.FOLLOW_PRIM_SMOOTHED,
+            fixed_anchor_height=True,
+        )
+
+    def get_teleop_target_frame_prim_path(self) -> str | None:
+        return "/World/envs/env_0/Robot/pelvis"
+
+
+@register_asset
+class H2PinkEmbodiment(H2EmbodimentBase):
+    """H2 embodiment with PinkIK upper-body control and fixed lower body."""
+
+    name = "h2_pink"
+
+    def __init__(
+        self,
+        enable_cameras: bool = False,
+        initial_pose: Pose | None = None,
+        camera_offset: Pose | None = _DEFAULT_H2_CAMERA_OFFSET,
+        use_tiled_camera: bool = False,
+    ):
+        super().__init__(enable_cameras, initial_pose)
+        self.action_config = H2PinkActionCfgWrapper()
+        self.observation_config = H2PinkObservationsCfg()
+        self.observation_config.policy.concatenate_terms = self.concatenate_observation_terms
+        self.event_config = H2EventCfg()
+        self.camera_config._is_tiled_camera = use_tiled_camera
+        self.camera_config._camera_offset = camera_offset

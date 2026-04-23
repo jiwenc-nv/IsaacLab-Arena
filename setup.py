@@ -33,6 +33,7 @@ setup(
             "isaaclab_arena_examples*",
             "isaaclab_arena_g1*",
             "isaaclab_arena_gr00t*",
+            "isaaclab_arena_h2*",
         ]
     ),
     python_requires=">=3.10",
