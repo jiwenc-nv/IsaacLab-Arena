@@ -3,15 +3,16 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""H2 teleop environment for upper-body reaching with PinkIK and fixed lower body.
+"""H2 teleop environment with PinkIK and fixed lower body.
 
-Uses the galileo locomanip background scene. No grasping -- the H2 has no
-dexterous hands, so this environment focuses on arm reaching via teleop.
+Uses the galileo locomanip background scene. Optionally spawns interactable
+objects via ``--object`` / ``--destination`` for teleop grasping practice.
 """
 
 from __future__ import annotations
 
 import argparse
+import math
 from typing import TYPE_CHECKING
 
 from isaaclab_arena.assets.register import register_environment
@@ -23,8 +24,6 @@ if TYPE_CHECKING:
 
 @register_environment
 class H2TeleopEnvironment(ExampleEnvironmentBase):
-    # TODO: Add a pick-and-place task variant once a gripper end-effector is
-    # integrated. Currently uses NoTask (reaching only).
 
     name: str = "h2_teleop"
 
@@ -32,7 +31,7 @@ class H2TeleopEnvironment(ExampleEnvironmentBase):
         from isaaclab_arena.environments.isaaclab_arena_environment import IsaacLabArenaEnvironment
         from isaaclab_arena.scene.scene import Scene
         from isaaclab_arena.tasks.no_task import NoTask
-        from isaaclab_arena.utils.pose import Pose
+        from isaaclab_arena.utils.pose import Pose, PoseRange
 
         background = self.asset_registry.get_asset_by_name("galileo_locomanip")()
         embodiment = self.asset_registry.get_asset_by_name(args_cli.embodiment)(enable_cameras=args_cli.enable_cameras)
@@ -47,7 +46,32 @@ class H2TeleopEnvironment(ExampleEnvironmentBase):
         # and a scene that better suits fixed-base manipulation.
         embodiment.set_initial_pose(Pose(position_xyz=(0.0, 0.18, 0.0), rotation_xyzw=(0.0, 0.0, 0.0, 1.0)))
 
-        scene = Scene(assets=[background])
+        scene_assets = [background]
+
+        if args_cli.object is not None:
+            pick_up_object = self.asset_registry.get_asset_by_name(args_cli.object)()
+            XY_RANGE_M = 0.025
+            pick_up_object.set_initial_pose(
+                PoseRange(
+                    position_xyz_min=(0.5785 - XY_RANGE_M, 0.18 - XY_RANGE_M, 0.0707),
+                    position_xyz_max=(0.5785 + XY_RANGE_M, 0.18 + XY_RANGE_M, 0.0707),
+                    rpy_min=(math.pi, 0.0, math.pi),
+                    rpy_max=(math.pi, 0.0, math.pi),
+                )
+            )
+            scene_assets.append(pick_up_object)
+
+        if args_cli.destination is not None:
+            destination = self.asset_registry.get_asset_by_name(args_cli.destination)()
+            destination.set_initial_pose(
+                Pose(
+                    position_xyz=(-0.2450, -1.6272, -0.2641),
+                    rotation_xyzw=(0.0, 0.0, 1.0, 0.0),
+                )
+            )
+            scene_assets.append(destination)
+
+        scene = Scene(assets=scene_assets)
         isaaclab_arena_environment = IsaacLabArenaEnvironment(
             name=self.name,
             embodiment=embodiment,
@@ -61,3 +85,5 @@ class H2TeleopEnvironment(ExampleEnvironmentBase):
     def add_cli_args(parser: argparse.ArgumentParser) -> None:
         parser.add_argument("--embodiment", type=str, default="h2_pink")
         parser.add_argument("--teleop_device", type=str, default=None)
+        parser.add_argument("--object", type=str, default=None, help="Interactable object to spawn (e.g. brown_box)")
+        parser.add_argument("--destination", type=str, default=None, help="Destination asset to spawn (e.g. blue_sorting_bin)")

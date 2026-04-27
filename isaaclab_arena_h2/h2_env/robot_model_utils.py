@@ -12,27 +12,29 @@ from isaaclab_arena_h2.h2_env.h2_supplemental_info import H2SupplementalInfo
 H2_JOINTS_ORDER_PATH = os.path.join(os.path.dirname(__file__), "config/h2_joints_order_45dof.yaml")
 
 
+_ROBOT_MENAGERIE_H2_URDF = "robot_menagerie/unitree/h2/urdf/H2_with_hands.urdf"
+
+
 def _resolve_h2_urdf_path() -> str:
-    """Resolve the H2 URDF path from H2_URDF_PATH env var or common locations."""
+    """Resolve the H2 URDF path following the same convention as G1.
+
+    The canonical source is ``~/repo/robot_menagerie/unitree/h2/urdf/``.
+    Override with the ``H2_URDF_PATH`` environment variable if needed.
+    """
     env_path = os.environ.get("H2_URDF_PATH")
     if env_path and os.path.isfile(env_path):
         return env_path
 
-    # Locate the isaaclab_arena_h2 package so paths work regardless of cwd
-    try:
-        import isaaclab_arena_h2
+    # In-package URDF shipped alongside the assets (works inside Docker where
+    # robot_menagerie is not mounted).
+    _pkg_urdf = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "urdf", "H2_with_hands.urdf")
 
-        pkg_root = os.path.dirname(os.path.abspath(isaaclab_arena_h2.__file__))
-    except ImportError:
-        pkg_root = None
-
-    candidates = []
-    if pkg_root:
-        candidates.append(os.path.join(pkg_root, "assets", "urdf", "H2_with_hands.urdf"))
-        candidates.append(os.path.join(pkg_root, "assets", "urdf", "H2.urdf"))
-
-    candidates += [
-        "/robot_menagerie/unitree/h2/urdf/H2.urdf",
+    candidates = [
+        # Primary: robot_menagerie on the host (~/repo/robot_menagerie/...)
+        os.path.expanduser(f"~/repo/{_ROBOT_MENAGERIE_H2_URDF}"),
+        # In-package copy (always available if the repo is mounted)
+        _pkg_urdf,
+        # Fallback without hands
         os.path.expanduser("~/repo/robot_menagerie/unitree/h2/urdf/H2.urdf"),
     ]
     for p in candidates:
@@ -40,8 +42,8 @@ def _resolve_h2_urdf_path() -> str:
             return p
 
     raise FileNotFoundError(
-        "H2 URDF not found. Set the H2_URDF_PATH environment variable to the path of H2.urdf, "
-        "or copy the URDF into isaaclab_arena_h2/assets/urdf/."
+        "H2 URDF not found. Ensure ~/repo/robot_menagerie/unitree/h2/ exists "
+        "(clone the robot_menagerie repo), or set H2_URDF_PATH."
     )
 
 

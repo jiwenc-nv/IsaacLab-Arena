@@ -1,0 +1,10 @@
+# Generated USD artifacts -- regenerate via convert_h2_urdf_to_usd.py
+H2/
+H2_with_hands/
+
+# Robot URDF and meshes -- sourced from ~/repo/robot_menagerie/unitree/h2/
+urdf/
+
+# Keep this .gitignore and any documentation
+!.gitignore
+!README.md
