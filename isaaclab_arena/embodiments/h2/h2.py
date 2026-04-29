@@ -6,7 +6,6 @@
 """Unitree H2 embodiment with PinkIK upper-body control and fixed lower body."""
 
 import os
-
 import isaaclab.envs.mdp as base_mdp
 import isaaclab.sim as sim_utils
 from isaaclab.actuators import IdealPDActuatorCfg
@@ -15,7 +14,6 @@ from isaaclab.managers import EventTermCfg as EventTerm
 from isaaclab.managers import ObservationGroupCfg as ObsGroup
 from isaaclab.managers import ObservationTermCfg as ObsTerm
 from isaaclab.managers import SceneEntityCfg
-from isaaclab.managers.action_manager import ActionTermCfg
 from isaaclab.sensors import CameraCfg, TiledCameraCfg
 from isaaclab.utils import configclass
 from isaaclab_teleop import XrCfg
@@ -27,7 +25,8 @@ from isaaclab_arena.embodiments.common.arm_mode import ArmMode
 from isaaclab_arena.embodiments.embodiment_base import EmbodimentBase
 from isaaclab_arena.terms.events import reset_all_articulation_joints
 from isaaclab_arena.utils.pose import Pose
-from isaaclab_arena_h2.h2_env.mdp.actions.h2_pink_action_cfg import H2PinkActionCfg
+from isaaclab.controllers.pink_ik import DampingTaskCfg, FrameTaskCfg, NullSpacePostureTaskCfg, PinkIKControllerCfg
+from isaaclab.envs.mdp.actions.pink_actions_cfg import PinkInverseKinematicsActionCfg
 
 # TODO: Once the H2 USD is hosted on Nucleus (like the G1), replace this
 # resolution logic with a simple ISAAC_NUCLEUS_DIR reference.
@@ -52,6 +51,8 @@ def _resolve_h2_usd_path() -> str:
     if pkg_root:
         assets_dir = os.path.join(pkg_root, "assets")
         candidates += [
+            os.path.join(assets_dir, "H2_sharpa_flattened", "H2_sharpa_flattened_clean.usd"),
+            os.path.join(assets_dir, "H2_with_sharpa_hands", "H2_with_sharpa_hands.usda"),
             os.path.join(assets_dir, "H2_with_hands", "H2_with_hands.usda"),
             os.path.join(assets_dir, "H2", "H2.usda"),
         ]
@@ -95,6 +96,7 @@ class H2SceneCfg:
             ),
             articulation_props=sim_utils.ArticulationRootPropertiesCfg(
                 enabled_self_collisions=False,
+                fix_root_link=True,
                 solver_position_iteration_count=4,
                 solver_velocity_iteration_count=0,
             ),
@@ -251,13 +253,19 @@ class H2SceneCfg:
                 friction=0.03,
             ),
             "hands": IdealPDActuatorCfg(
-                joint_names_expr=[".*_hand_.*"],
-                effort_limit=5.0,
-                velocity_limit=10.0,
+                joint_names_expr=[
+                    ".*_thumb_.*",
+                    ".*_index_.*",
+                    ".*_middle_.*",
+                    ".*_ring_.*",
+                    ".*_pinky_.*",
+                ],
+                effort_limit=3.3,
+                velocity_limit=16.0,
                 stiffness=4.0,
                 damping=0.5,
-                armature=0.03,
-                friction=0.03,
+                armature=0.01,
+                friction=0.01,
             ),
         },
     )
@@ -336,11 +344,95 @@ class H2PinkObservationsCfg:
     policy: PolicyCfg = PolicyCfg()
 
 
-@configclass
-class H2PinkActionCfgWrapper:
-    """Action specifications for the H2 PinkIK embodiment."""
+H2_SHARPA_LEFT_HAND_JOINT_NAMES = [
+    "left_thumb_CMC_FE", "left_thumb_CMC_AA", "left_thumb_MCP_FE", "left_thumb_MCP_AA", "left_thumb_IP",
+    "left_index_MCP_FE", "left_index_MCP_AA", "left_index_PIP", "left_index_DIP",
+    "left_middle_MCP_FE", "left_middle_MCP_AA", "left_middle_PIP", "left_middle_DIP",
+    "left_ring_MCP_FE", "left_ring_MCP_AA", "left_ring_PIP", "left_ring_DIP",
+    "left_pinky_CMC", "left_pinky_MCP_FE", "left_pinky_MCP_AA", "left_pinky_PIP", "left_pinky_DIP",
+]
 
-    h2_action: ActionTermCfg = H2PinkActionCfg(asset_name="robot", joint_names=[".*"])
+H2_SHARPA_RIGHT_HAND_JOINT_NAMES = [
+    "right_thumb_CMC_FE", "right_thumb_CMC_AA", "right_thumb_MCP_FE", "right_thumb_MCP_AA", "right_thumb_IP",
+    "right_index_MCP_FE", "right_index_MCP_AA", "right_index_PIP", "right_index_DIP",
+    "right_middle_MCP_FE", "right_middle_MCP_AA", "right_middle_PIP", "right_middle_DIP",
+    "right_ring_MCP_FE", "right_ring_MCP_AA", "right_ring_PIP", "right_ring_DIP",
+    "right_pinky_CMC", "right_pinky_MCP_FE", "right_pinky_MCP_AA", "right_pinky_PIP", "right_pinky_DIP",
+]
+
+
+@configclass
+class H2SharpaActionsCfg:
+    """Action config for H2 with Sharpa Wave hands using Isaac Lab's PinkIK."""
+
+    upper_body_ik = PinkInverseKinematicsActionCfg(
+        enable_gravity_compensation=True,
+        pink_controlled_joint_names=[
+            "left_shoulder_pitch_joint",
+            "left_shoulder_roll_joint",
+            "left_shoulder_yaw_joint",
+            "left_elbow_joint",
+            "left_wrist_roll_joint",
+            "left_wrist_pitch_joint",
+            "left_wrist_yaw_joint",
+            "right_shoulder_pitch_joint",
+            "right_shoulder_roll_joint",
+            "right_shoulder_yaw_joint",
+            "right_elbow_joint",
+            "right_wrist_roll_joint",
+            "right_wrist_pitch_joint",
+            "right_wrist_yaw_joint",
+        ],
+        hand_joint_names=H2_SHARPA_LEFT_HAND_JOINT_NAMES + H2_SHARPA_RIGHT_HAND_JOINT_NAMES,
+        target_eef_link_names={
+            "left_wrist": "left_wrist_yaw_link",
+            "right_wrist": "right_wrist_yaw_link",
+        },
+        asset_name="robot",
+        controller=PinkIKControllerCfg(
+            articulation_name="robot",
+            base_link_name="pelvis",
+            num_hand_joints=44,
+            show_ik_warnings=True,
+            fail_on_joint_limit_violation=False,
+            variable_input_tasks=[
+                FrameTaskCfg(
+                    frame="left_wrist_yaw_link",
+                    position_cost=1.0,
+                    orientation_cost=0.5,
+                    lm_damping=1.0,
+                    gain=0.5,
+                ),
+                FrameTaskCfg(
+                    frame="right_wrist_yaw_link",
+                    position_cost=1.0,
+                    orientation_cost=0.5,
+                    lm_damping=1.0,
+                    gain=0.5,
+                ),
+                DampingTaskCfg(cost=0.5),
+                NullSpacePostureTaskCfg(
+                    cost=0.01,
+                    lm_damping=1.0,
+                    controlled_frames=[
+                        "left_wrist_yaw_link",
+                        "right_wrist_yaw_link",
+                    ],
+                    controlled_joints=[
+                        "left_shoulder_pitch_joint",
+                        "left_shoulder_roll_joint",
+                        "left_shoulder_yaw_joint",
+                        "left_elbow_joint",
+                        "right_shoulder_pitch_joint",
+                        "right_shoulder_roll_joint",
+                        "right_shoulder_yaw_joint",
+                        "right_elbow_joint",
+                    ],
+                ),
+            ],
+            fixed_input_tasks=[],
+        ),
+    )
 
 
 @configclass
@@ -378,12 +470,12 @@ class H2EmbodimentBase(EmbodimentBase):
         )
 
     def get_teleop_target_frame_prim_path(self) -> str | None:
-        return "/World/envs/env_0/Robot/pelvis"
+        return None
 
 
 @register_asset
 class H2PinkEmbodiment(H2EmbodimentBase):
-    """H2 embodiment with PinkIK upper-body control and fixed lower body."""
+    """H2 embodiment with PinkIK upper-body control, Sharpa Wave dexterous hands, and fixed lower body."""
 
     name = "h2_pink"
 
@@ -395,9 +487,15 @@ class H2PinkEmbodiment(H2EmbodimentBase):
         use_tiled_camera: bool = False,
     ):
         super().__init__(enable_cameras, initial_pose)
-        self.action_config = H2PinkActionCfgWrapper()
+        self.action_config = H2SharpaActionsCfg()
         self.observation_config = H2PinkObservationsCfg()
         self.observation_config.policy.concatenate_terms = self.concatenate_observation_terms
         self.event_config = H2EventCfg()
         self.camera_config._is_tiled_camera = use_tiled_camera
         self.camera_config._camera_offset = camera_offset
+
+        from isaaclab_arena_h2.h2_env.robot_model_utils import _resolve_h2_urdf_path
+
+        h2_urdf_path = _resolve_h2_urdf_path()
+        self.action_config.upper_body_ik.controller.urdf_path = h2_urdf_path
+        self.action_config.upper_body_ik.controller.mesh_path = os.path.dirname(h2_urdf_path)

@@ -90,7 +90,7 @@ class G1WbcAgilePinkIsaacTeleopRetargeter(RetargetterBase):
 
 @register_retargeter
 class H2PinkIsaacTeleopRetargeter(RetargetterBase):
-    """Isaac Teleop pipeline builder for H2 with PinkIK upper-body control (wrist SE3 only)."""
+    """Isaac Teleop pipeline builder for H2 with PinkIK + Sharpa Wave dex-retargeting (58D)."""
 
     device = "openxr"
     embodiment = "h2_pink"

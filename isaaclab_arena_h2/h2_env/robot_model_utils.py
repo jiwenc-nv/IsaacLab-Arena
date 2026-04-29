@@ -9,32 +9,33 @@ import os
 from isaaclab_arena_g1.g1_env.robot_model import RobotModel
 from isaaclab_arena_h2.h2_env.h2_supplemental_info import H2SupplementalInfo
 
-H2_JOINTS_ORDER_PATH = os.path.join(os.path.dirname(__file__), "config/h2_joints_order_45dof.yaml")
+H2_JOINTS_ORDER_PATH = os.path.join(os.path.dirname(__file__), "config/h2_joints_order_75dof.yaml")
 
 
-_ROBOT_MENAGERIE_H2_URDF = "robot_menagerie/unitree/h2/urdf/H2_with_hands.urdf"
+_ROBOT_MENAGERIE_H2_URDF = "robot_menagerie/unitree/h2/urdf/H2_with_sharpa_hands.urdf"
 
 
 def _resolve_h2_urdf_path() -> str:
     """Resolve the H2 URDF path following the same convention as G1.
 
-    The canonical source is ``~/repo/robot_menagerie/unitree/h2/urdf/``.
+    Prefers the Sharpa Wave hand URDF (H2_with_sharpa_hands.urdf) with the
+    original Dex3-1 URDF (H2_with_hands.urdf) as a fallback.
     Override with the ``H2_URDF_PATH`` environment variable if needed.
     """
     env_path = os.environ.get("H2_URDF_PATH")
     if env_path and os.path.isfile(env_path):
         return env_path
 
-    # In-package URDF shipped alongside the assets (works inside Docker where
-    # robot_menagerie is not mounted).
-    _pkg_urdf = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "urdf", "H2_with_hands.urdf")
+    _assets_urdf_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "urdf")
 
     candidates = [
-        # Primary: robot_menagerie on the host (~/repo/robot_menagerie/...)
+        # Primary: in-package Sharpa Wave hands URDF
+        os.path.join(_assets_urdf_dir, "H2_with_sharpa_hands.urdf"),
+        # robot_menagerie on the host (~/repo/robot_menagerie/...)
         os.path.expanduser(f"~/repo/{_ROBOT_MENAGERIE_H2_URDF}"),
-        # In-package copy (always available if the repo is mounted)
-        _pkg_urdf,
-        # Fallback without hands
+        # Fallback: in-package original Dex3-1 hands URDF
+        os.path.join(_assets_urdf_dir, "H2_with_hands.urdf"),
+        # Fallback: bare H2 without hands
         os.path.expanduser("~/repo/robot_menagerie/unitree/h2/urdf/H2.urdf"),
     ]
     for p in candidates:

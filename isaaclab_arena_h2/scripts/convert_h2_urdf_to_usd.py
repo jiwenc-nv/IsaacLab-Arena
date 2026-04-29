@@ -3,21 +3,21 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""One-time URDF-to-USD conversion for the Unitree H2 robot.
+"""One-time URDF-to-USD conversion for the Unitree H2 robot with Sharpa Wave hands.
 
 Prerequisites:
-    Clone the robot_menagerie repo at ~/repo/robot_menagerie so that the H2 URDF
-    and meshes are available at ~/repo/robot_menagerie/unitree/h2/urdf/.
+    The H2_with_sharpa_hands.urdf (H2 body + Sharpa Wave hands) must be present in
+    the in-package assets directory (isaaclab_arena_h2/assets/urdf/).
 
-    The H2_with_hands.urdf (H2 body + Dex3-1 hands) must be generated first -- see
-    the merged URDF creation logic or copy from a coworker who has already built it.
+    Alternatively, clone the robot_menagerie repo at ~/repo/robot_menagerie so that
+    the H2 URDF and meshes are available at ~/repo/robot_menagerie/unitree/h2/urdf/.
 
 Usage (inside the Isaac Sim Docker container):
     /isaac-sim/python.sh isaaclab_arena_h2/scripts/convert_h2_urdf_to_usd.py
 
     # Or with an explicit path:
     /isaac-sim/python.sh isaaclab_arena_h2/scripts/convert_h2_urdf_to_usd.py \\
-        --urdf_path ~/repo/robot_menagerie/unitree/h2/urdf/H2_with_hands.urdf
+        --urdf_path ~/repo/robot_menagerie/unitree/h2/urdf/H2_with_sharpa_hands.urdf
 
 The output USD is written to isaaclab_arena_h2/assets/ and will be auto-discovered
 by the H2 embodiment at runtime.
@@ -26,7 +26,7 @@ by the H2 embodiment at runtime.
 import argparse
 import os
 
-_DEFAULT_URDF_PATH = os.path.expanduser("~/repo/robot_menagerie/unitree/h2/urdf/H2_with_hands.urdf")
+_DEFAULT_URDF_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "urdf", "H2_with_sharpa_hands.urdf")
 _DEFAULT_OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets")
 
 parser = argparse.ArgumentParser(description="Convert H2 URDF to USD for Isaac Sim")
@@ -56,7 +56,8 @@ from isaaclab.sim.converters import UrdfConverter, UrdfConverterCfg
 
 assert os.path.isfile(args_cli.urdf_path), (
     f"URDF not found: {args_cli.urdf_path}\n"
-    "Ensure ~/repo/robot_menagerie/unitree/h2/ exists with the H2 URDF and meshes."
+    "Ensure H2_with_sharpa_hands.urdf exists in isaaclab_arena_h2/assets/urdf/ "
+    "or provide an explicit --urdf_path."
 )
 os.makedirs(args_cli.output_dir, exist_ok=True)
 
@@ -64,7 +65,7 @@ os.makedirs(args_cli.output_dir, exist_ok=True)
 cfg = UrdfConverterCfg(
     asset_path=args_cli.urdf_path,
     usd_dir=args_cli.output_dir,
-    usd_file_name="H2.usd",
+    usd_file_name="H2_with_sharpa_hands.usda",
     force_usd_conversion=True,
     make_instanceable=False,
     fix_base=True,
