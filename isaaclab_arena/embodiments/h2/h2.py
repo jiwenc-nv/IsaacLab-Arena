@@ -344,20 +344,34 @@ class H2PinkObservationsCfg:
     policy: PolicyCfg = PolicyCfg()
 
 
-H2_SHARPA_LEFT_HAND_JOINT_NAMES = [
-    "left_thumb_CMC_FE", "left_thumb_CMC_AA", "left_thumb_MCP_FE", "left_thumb_MCP_AA", "left_thumb_IP",
-    "left_index_MCP_FE", "left_index_MCP_AA", "left_index_PIP", "left_index_DIP",
-    "left_middle_MCP_FE", "left_middle_MCP_AA", "left_middle_PIP", "left_middle_DIP",
-    "left_ring_MCP_FE", "left_ring_MCP_AA", "left_ring_PIP", "left_ring_DIP",
-    "left_pinky_CMC", "left_pinky_MCP_FE", "left_pinky_MCP_AA", "left_pinky_PIP", "left_pinky_DIP",
-]
-
-H2_SHARPA_RIGHT_HAND_JOINT_NAMES = [
-    "right_thumb_CMC_FE", "right_thumb_CMC_AA", "right_thumb_MCP_FE", "right_thumb_MCP_AA", "right_thumb_IP",
-    "right_index_MCP_FE", "right_index_MCP_AA", "right_index_PIP", "right_index_DIP",
-    "right_middle_MCP_FE", "right_middle_MCP_AA", "right_middle_PIP", "right_middle_DIP",
-    "right_ring_MCP_FE", "right_ring_MCP_AA", "right_ring_PIP", "right_ring_DIP",
-    "right_pinky_CMC", "right_pinky_MCP_FE", "right_pinky_MCP_AA", "right_pinky_PIP", "right_pinky_DIP",
+# Hand joint names ordered to match the PhysX BFS articulation traversal of
+# the flattened USD (where hands are separate prim trees connected via fixed
+# joints). find_joints(preserve_order=False) returns IDs in this order, so
+# the teleop pipeline output_order must match exactly.
+H2_SHARPA_HAND_JOINT_NAMES_ARTICULATION_ORDER = [
+    # BFS depth 0 -- first DOF of each finger, left then right
+    "left_index_MCP_FE", "left_middle_MCP_FE", "left_pinky_CMC",
+    "left_ring_MCP_FE", "left_thumb_CMC_FE",
+    "right_index_MCP_FE", "right_middle_MCP_FE", "right_pinky_CMC",
+    "right_ring_MCP_FE", "right_thumb_CMC_FE",
+    # BFS depth 1
+    "left_index_MCP_AA", "left_middle_MCP_AA", "left_pinky_MCP_FE",
+    "left_ring_MCP_AA", "left_thumb_CMC_AA",
+    "right_index_MCP_AA", "right_middle_MCP_AA", "right_pinky_MCP_FE",
+    "right_ring_MCP_AA", "right_thumb_CMC_AA",
+    # BFS depth 2
+    "left_index_PIP", "left_middle_PIP", "left_pinky_MCP_AA",
+    "left_ring_PIP", "left_thumb_MCP_FE",
+    "right_index_PIP", "right_middle_PIP", "right_pinky_MCP_AA",
+    "right_ring_PIP", "right_thumb_MCP_FE",
+    # BFS depth 3
+    "left_index_DIP", "left_middle_DIP", "left_pinky_PIP",
+    "left_ring_DIP", "left_thumb_MCP_AA",
+    "right_index_DIP", "right_middle_DIP", "right_pinky_PIP",
+    "right_ring_DIP", "right_thumb_MCP_AA",
+    # BFS depth 4 (pinky + thumb terminal joints)
+    "left_pinky_DIP", "left_thumb_IP",
+    "right_pinky_DIP", "right_thumb_IP",
 ]
 
 
@@ -383,7 +397,7 @@ class H2SharpaActionsCfg:
             "right_wrist_pitch_joint",
             "right_wrist_yaw_joint",
         ],
-        hand_joint_names=H2_SHARPA_LEFT_HAND_JOINT_NAMES + H2_SHARPA_RIGHT_HAND_JOINT_NAMES,
+        hand_joint_names=H2_SHARPA_HAND_JOINT_NAMES_ARTICULATION_ORDER,
         target_eef_link_names={
             "left_wrist": "left_wrist_yaw_link",
             "right_wrist": "right_wrist_yaw_link",

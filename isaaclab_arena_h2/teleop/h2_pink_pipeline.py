@@ -8,7 +8,7 @@
 Output layout (58D):
     [left_wrist_pos(3), left_wrist_quat(4),
      right_wrist_pos(3), right_wrist_quat(4),
-     left_hand_joints(22), right_hand_joints(22)]
+     hand_joints(44) in PhysX BFS articulation order]
 
 Wrist SE3 from Se3AbsRetargeter connected to HandsSource (hand-tracking wrist poses).
 Finger joints from DexHandRetargeter using DexPilot retargeting from raw hand tracking.
@@ -166,12 +166,16 @@ def _build_h2_pink_pipeline():
 
     # -------------------------------------------------------------------------
     # TensorReorderer: flatten into a 58D action tensor
-    # [left_wrist(7), right_wrist(7), left_hand(22), right_hand(22)]
+    # [left_wrist(7), right_wrist(7), hand_joints(44)]
+    # Hand joints are ordered to match the PhysX BFS articulation traversal
+    # so that find_joints(preserve_order=False) returns matching indices.
     # -------------------------------------------------------------------------
     left_ee_elements = ["l_pos_x", "l_pos_y", "l_pos_z", "l_quat_x", "l_quat_y", "l_quat_z", "l_quat_w"]
     right_ee_elements = ["r_pos_x", "r_pos_y", "r_pos_z", "r_quat_x", "r_quat_y", "r_quat_z", "r_quat_w"]
 
-    output_order = left_ee_elements + right_ee_elements + left_hand_joint_names + right_hand_joint_names
+    from isaaclab_arena.embodiments.h2.h2 import H2_SHARPA_HAND_JOINT_NAMES_ARTICULATION_ORDER
+
+    output_order = left_ee_elements + right_ee_elements + H2_SHARPA_HAND_JOINT_NAMES_ARTICULATION_ORDER
 
     reorderer = TensorReorderer(
         input_config={
