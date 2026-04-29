@@ -26,8 +26,9 @@ by the H2 embodiment at runtime.
 import argparse
 import os
 
-_DEFAULT_URDF_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "urdf", "H2_with_sharpa_hands.urdf")
-_DEFAULT_OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets")
+_PKG_DIR = os.path.dirname(os.path.dirname(__file__))
+_DEFAULT_URDF_PATH = os.path.join(_PKG_DIR, "assets", "urdf", "H2_with_sharpa_hands.urdf")
+_DEFAULT_OUTPUT_DIR = os.path.join(_PKG_DIR, "assets")
 
 parser = argparse.ArgumentParser(description="Convert H2 URDF to USD for Isaac Sim")
 parser.add_argument(

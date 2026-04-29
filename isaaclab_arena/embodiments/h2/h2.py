@@ -25,7 +25,7 @@ from isaaclab_arena.embodiments.common.arm_mode import ArmMode
 from isaaclab_arena.embodiments.embodiment_base import EmbodimentBase
 from isaaclab_arena.terms.events import reset_all_articulation_joints
 from isaaclab_arena.utils.pose import Pose
-from isaaclab.controllers.pink_ik import DampingTaskCfg, FrameTaskCfg, NullSpacePostureTaskCfg, PinkIKControllerCfg
+from isaaclab.controllers.pink_ik import FrameTaskCfg, NullSpacePostureTaskCfg, PinkIKControllerCfg
 from isaaclab.envs.mdp.actions.pink_actions_cfg import PinkInverseKinematicsActionCfg
 
 # TODO: Once the H2 USD is hosted on Nucleus (like the G1), replace this
@@ -195,8 +195,8 @@ class H2SceneCfg:
                     "waist_pitch_joint": 180.0,
                 },
                 velocity_limit=28.0,
-                stiffness=250.0,
-                damping=5.0,
+                stiffness=1e4,
+                damping=1e3,
                 armature=0.03,
                 friction=0.03,
             ),
@@ -240,16 +240,16 @@ class H2SceneCfg:
                     ".*_shoulder_roll_joint": 100.0,
                     ".*_shoulder_yaw_joint": 40.0,
                     ".*_elbow_joint": 40.0,
-                    ".*_wrist_.*_joint": 20.0,
+                    ".*_wrist_.*_joint": 100.0,
                 },
                 damping={
                     ".*_shoulder_pitch_joint": 5.0,
                     ".*_shoulder_roll_joint": 5.0,
                     ".*_shoulder_yaw_joint": 2.0,
                     ".*_elbow_joint": 2.0,
-                    ".*_wrist_.*_joint": 2.0,
+                    ".*_wrist_.*_joint": 5.0,
                 },
-                armature=0.03,
+                armature={".*_shoulder_.*": 0.03, ".*_elbow_.*": 0.03, ".*_wrist_.*_joint": 0.03},
                 friction=0.03,
             ),
             "hands": IdealPDActuatorCfg(
@@ -264,8 +264,8 @@ class H2SceneCfg:
                 velocity_limit=16.0,
                 stiffness=4.0,
                 damping=0.5,
-                armature=0.01,
-                friction=0.01,
+                armature=0.03,
+                friction=0.03,
             ),
         },
     )
@@ -380,7 +380,7 @@ class H2SharpaActionsCfg:
     """Action config for H2 with Sharpa Wave hands using Isaac Lab's PinkIK."""
 
     upper_body_ik = PinkInverseKinematicsActionCfg(
-        enable_gravity_compensation=True,
+        enable_gravity_compensation=False,
         pink_controlled_joint_names=[
             "left_shoulder_pitch_joint",
             "left_shoulder_roll_joint",
@@ -414,17 +414,12 @@ class H2SharpaActionsCfg:
                     frame="left_wrist_yaw_link",
                     position_cost=1.0,
                     orientation_cost=0.5,
-                    lm_damping=1.0,
-                    gain=0.5,
                 ),
                 FrameTaskCfg(
                     frame="right_wrist_yaw_link",
                     position_cost=1.0,
                     orientation_cost=0.5,
-                    lm_damping=1.0,
-                    gain=0.5,
                 ),
-                DampingTaskCfg(cost=0.5),
                 NullSpacePostureTaskCfg(
                     cost=0.01,
                     lm_damping=1.0,

@@ -1,9 +1,0 @@
-load("//tools:robot_format.bzl", "robot_format")
-
-robot_format(
-    name = "urdf",
-    format = "urdf",
-    main = "H2.urdf",
-    srcs = glob(["**"]),
-    visibility = ["//visibility:public"],
-)

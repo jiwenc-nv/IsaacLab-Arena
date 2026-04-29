@@ -2,6 +2,7 @@
 H2/
 H2_with_hands/
 H2_with_sharpa_hands/
+H2_sharpa_flattened/
 
 # Robot URDF and meshes -- sourced from robot_menagerie and sharpa-urdf-usd-xml
 urdf/

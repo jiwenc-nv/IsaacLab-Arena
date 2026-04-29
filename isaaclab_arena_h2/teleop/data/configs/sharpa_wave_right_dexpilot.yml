@@ -36,5 +36,5 @@ retargeting:
   - right_pinky_PIP
   - right_pinky_DIP
   type: DexPilot
-  urdf_path: /tmp/right_sharpa_wave.urdf
+  urdf_path: placeholder_overridden_at_runtime
   wrist_link_name: right_hand_C_MC

@@ -52,8 +52,8 @@ def _build_h2_pink_pipeline():
     left_se3_cfg = Se3RetargeterConfig(
         input_device=HandsSource.LEFT,
         zero_out_xy_rotation=False,
-        use_wrist_rotation=False,
-        use_wrist_position=False,
+        use_wrist_rotation=True,
+        use_wrist_position=True,
         target_offset_roll=45.0,
         target_offset_pitch=180.0,
         target_offset_yaw=-90.0,
@@ -66,8 +66,8 @@ def _build_h2_pink_pipeline():
     right_se3_cfg = Se3RetargeterConfig(
         input_device=HandsSource.RIGHT,
         zero_out_xy_rotation=False,
-        use_wrist_rotation=False,
-        use_wrist_position=False,
+        use_wrist_rotation=True,
+        use_wrist_position=True,
         target_offset_roll=-135.0,
         target_offset_pitch=0.0,
         target_offset_yaw=90.0,
