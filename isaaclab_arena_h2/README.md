@@ -28,7 +28,28 @@ git checkout rwiltz/h2-bringup
 
 ### 2. Place assets (see [Asset Setup](#asset-setup) below)
 
-### 3. Run the H2 teleop environment
+### 3. Start the CloudXR runtime (for HMD hand tracking)
+
+In a **separate terminal**, start the CloudXR streaming server inside the container.
+
+First, create a `cloudxrjs-handtracking.env` file in your repo root:
+
+```bash
+cat > cloudxrjs-handtracking.env << 'EOF'
+NV_CXR_ENABLE_PUSH_DEVICES=0 #needed for HMD optical hand tracking
+EOF
+```
+
+Then launch the CloudXR runtime:
+
+```bash
+./docker/run_docker.sh
+python -m isaacteleop.cloudxr --cloudxr-env-config=cloudxrjs-handtracking.env
+```
+
+Leave this running while you use the teleop environment.
+
+### 4. Run the H2 teleop environment
 
 All commands below are run **inside the container** (after `./docker/run_docker.sh`).
 
@@ -65,6 +86,16 @@ python isaaclab_arena/evaluation/policy_runner.py \
 
 Assets are **not committed** to this branch. You need to place them manually.
 The total size is ~159 MB.
+
+### Untar the assets tarball
+
+If you have the `h2_assets.tar.gz` tarball, extract it into the `isaaclab_arena_h2` directory:
+
+```bash
+tar -xzf h2_assets.tar.gz -C isaaclab_arena_h2/
+```
+
+This will populate the `isaaclab_arena_h2/assets/` tree described below.
 
 ### Required: USD for Isaac Sim (pick one)
 
