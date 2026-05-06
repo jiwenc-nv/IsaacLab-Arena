@@ -13,9 +13,9 @@ the private fork as a second remote:
 ```bash
 git clone git@github.com:isaac-sim/IsaacLab-Arena.git
 cd IsaacLab-Arena
-git remote add rwiltz git@github.com:rwiltz/IsaacLab-Arena-H2-bringup.git
-git fetch rwiltz
-git checkout rwiltz/h2-bringup
+git remote add jiwenc-nv git@github.com:jiwenc-nv/IsaacLab-Arena.git
+git fetch jiwenc-nv
+git checkout devel/h2-gr00t-ra
 ```
 
 ## Quick Start
