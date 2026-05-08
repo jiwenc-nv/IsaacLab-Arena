@@ -268,6 +268,11 @@ def setup_teleop_device(callbacks: dict[str, Callable]) -> object:
     teleop_interface = None
     try:
         if hasattr(env_cfg, "isaac_teleop") and isinstance(env_cfg.isaac_teleop, IsaacTeleopCfg):
+            from isaaclab_arena.utils.isaaclab_utils.teleop_pipelined_default import (
+                enable_pipelined_retargeting_default,
+            )
+
+            enable_pipelined_retargeting_default()
             teleop_interface = create_isaac_teleop_device(
                 env_cfg.isaac_teleop,
                 sim_device=env_cfg.sim.device,
