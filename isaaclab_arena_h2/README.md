@@ -36,7 +36,8 @@ First, create a `cloudxrjs-handtracking.env` file in your repo root:
 
 ```bash
 cat > cloudxrjs-handtracking.env << 'EOF'
-NV_CXR_ENABLE_PUSH_DEVICES=0 #needed for HMD optical hand tracking
+# Needed for HMD optical hand tracking
+NV_CXR_ENABLE_PUSH_DEVICES=0
 EOF
 ```
 
