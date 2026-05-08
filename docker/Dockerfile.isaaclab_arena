@@ -49,8 +49,13 @@ RUN /isaac-sim/python.sh -m pip install --no-deps -e ${WORKDIR}/submodules/Isaac
 # Install isaaclab
 RUN ${ISAACLAB_PATH}/isaaclab.sh -i
 
-# Install Isaac Teleop Python APIs (retargeters, device I/O, OpenXR bindings)
-RUN /isaac-sim/python.sh -m pip install isaacteleop~=1.1.0 --extra-index-url https://pypi.nvidia.com
+# Install Isaac Teleop Python APIs (retargeters, device I/O, OpenXR bindings).
+# Pinned to the latest 1.2.x release-candidate so we pick up the pipelined
+# retargeting feature (TeleopCore commit 260f7660 / PR #467, backported to
+# release/1.2.x). The `rc1` suffix is required to opt pip into pre-release
+# resolution; without it pip would fall back to 1.1.x since no stable 1.2.x
+# wheel has been published yet.
+RUN /isaac-sim/python.sh -m pip install "isaacteleop~=1.2.0rc1" --extra-index-url https://pypi.nvidia.com
 
 # Install isaaclab_newton's [all] extra so its pinned mujoco / mujoco-warp / newton
 # versions take effect. The earlier `isaaclab*` loop above and `isaaclab.sh -i`
@@ -70,7 +75,7 @@ ENV LW_API_ENDPOINT="https://api-dev.lightwheel.net"
 # HuggingFace CLI for downloading datasets and models.
 # Use pipx so the hf binary gets an isolated venv with all its deps (e.g. requests),
 # without touching system Python packages.
-RUN apt-get install -y pipx && \
+RUN apt-get update && apt-get install -y pipx && \
     PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin \
     pipx install \
     "huggingface-hub[cli]" \
