@@ -24,6 +24,15 @@ from isaaclab_arena_environments.cli import add_example_environments_cli_args, g
 parser = get_isaaclab_arena_cli_parser()
 parser.add_argument("--sensitivity", type=float, default=1.0, help="Sensitivity factor.")
 parser.add_argument(
+    "--visualize_teleop_hand_pose",
+    action="store_true",
+    help=(
+        "Draw triaxis frame markers in the viewport at the left/right wrist poses"
+        " emitted by the IsaacTeleop pipeline. Useful for debugging the"
+        " hand-tracking -> retargeting chain before it hits Pink IK."
+    ),
+)
+parser.add_argument(
     "--live_gains_yaml",
     type=str,
     default=None,
@@ -242,6 +251,17 @@ def main() -> None:
     # TeleopSessionLifecycle.start() is called before advance().
     use_isaac_teleop = hasattr(teleop_interface, "__enter__") and hasattr(teleop_interface, "__exit__")
 
+    # Optional debug visualizer for IsaacTeleop wrist poses.
+    hand_pose_viz = None
+    if args_cli.visualize_teleop_hand_pose:
+        try:
+            from isaaclab_arena_h2.teleop.hand_pose_visualizer import TeleopHandPoseVisualizer
+
+            hand_pose_viz = TeleopHandPoseVisualizer()
+            print("Teleop hand pose visualizer enabled (frame markers at left/right wrists).")
+        except Exception as e:
+            omni.log.warn(f"Could not create teleop hand pose visualizer: {e}")
+
     # Optional live gain tuner for the robot.
     from isaaclab_arena.utils.live_gain_tuner import LiveGainTuner
 
@@ -269,11 +289,16 @@ def main() -> None:
                     # action is None when IsaacTeleop session hasn't started yet (e.g. waiting for "Start AR")
                     if action is None:
                         env.sim.render()
-                    elif teleoperation_active:
-                        actions = action.repeat(env.num_envs, 1)
-                        env.step(actions)
                     else:
-                        env.sim.render()
+                        # Debug viz follows the teleop output even while teleop is paused,
+                        # so the operator can verify hand tracking before pressing Start.
+                        if hand_pose_viz is not None:
+                            hand_pose_viz.update(action)
+                        if teleoperation_active:
+                            actions = action.repeat(env.num_envs, 1)
+                            env.step(actions)
+                        else:
+                            env.sim.render()
                     if should_reset_recording_instance:
                         env.reset()
                         teleop_interface.reset()
