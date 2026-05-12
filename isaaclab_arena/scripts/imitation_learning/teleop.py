@@ -23,6 +23,24 @@ from isaaclab_arena_environments.cli import add_example_environments_cli_args, g
 # add argparse arguments
 parser = get_isaaclab_arena_cli_parser()
 parser.add_argument("--sensitivity", type=float, default=1.0, help="Sensitivity factor.")
+parser.add_argument(
+    "--live_gains_yaml",
+    type=str,
+    default=None,
+    help=(
+        "Optional path to a YAML file whose contents are hot-reloaded "
+        "into the live articulation's explicit-actuator gains every "
+        "simulation step. See isaaclab_arena/utils/live_gain_tuner.py "
+        "for the schema."
+    ),
+)
+parser.add_argument(
+    "--live_gains_poll_interval",
+    type=float,
+    default=0.5,
+    help="Seconds between mtime checks of --live_gains_yaml (default 0.5).",
+)
+
 # Add the example environments CLI args
 # NOTE(alexmillane, 2025.09.04): This has to be added last, because
 # of the app specific flags being parsed after the global flags.
@@ -224,6 +242,19 @@ def main() -> None:
     # TeleopSessionLifecycle.start() is called before advance().
     use_isaac_teleop = hasattr(teleop_interface, "__enter__") and hasattr(teleop_interface, "__exit__")
 
+    # Optional live gain tuner for the robot.
+    from isaaclab_arena.utils.live_gain_tuner import LiveGainTuner
+
+    tuner: LiveGainTuner | None = None
+    if args_cli.live_gains_yaml is not None:
+        robot = env.scene["robot"]
+        tuner = LiveGainTuner(
+            robot,
+            yaml_path=args_cli.live_gains_yaml,
+            poll_interval=args_cli.live_gains_poll_interval,
+        )
+        print(f"[teleop] Live gain tuning enabled: {args_cli.live_gains_yaml}")
+
     def run_teleop_loop() -> None:
         nonlocal should_reset_recording_instance
         env.reset()
@@ -231,6 +262,8 @@ def main() -> None:
         print("Teleoperation started. Press 'R' to reset the environment.")
         while simulation_app.is_running():
             try:
+                if tuner is not None:
+                    tuner.maybe_reload()
                 with torch.inference_mode():
                     action = teleop_interface.advance()
                     # action is None when IsaacTeleop session hasn't started yet (e.g. waiting for "Start AR")
