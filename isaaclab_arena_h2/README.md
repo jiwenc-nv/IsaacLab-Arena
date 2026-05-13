@@ -28,24 +28,13 @@ git checkout devel/h2-gr00t-ra
 
 ### 2. Place assets (see [Asset Setup](#asset-setup) below)
 
-### 3. Start the CloudXR runtime (for HMD hand tracking)
+### 3. Start the CloudXR runtime
 
 In a **separate terminal**, start the CloudXR streaming server inside the container.
 
-First, create a `cloudxrjs-handtracking.env` file in your repo root:
-
-```bash
-cat > cloudxrjs-handtracking.env << 'EOF'
-# Needed for HMD optical hand tracking
-NV_CXR_ENABLE_PUSH_DEVICES=0
-EOF
-```
-
-Then launch the CloudXR runtime:
-
 ```bash
 ./docker/run_docker.sh
-python -m isaacteleop.cloudxr --cloudxr-env-config=cloudxrjs-handtracking.env
+python -m isaacteleop.cloudxr
 ```
 
 Leave this running while you use the teleop environment.
@@ -53,6 +42,8 @@ Leave this running while you use the teleop environment.
 ### 4. Run the H2 teleop environment
 
 All commands below are run **inside the container** (after `./docker/run_docker.sh`).
+
+Make sure to run the **source** command printed in the CloudXR terminal.
 
 ```bash
 # OpenXR teleop with Kit viewer, object and destination

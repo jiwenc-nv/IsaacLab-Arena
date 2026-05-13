@@ -60,8 +60,9 @@ RUN /isaac-sim/python.sh -m pip install --force-reinstall daqp==0.8.5
 # retargeting feature (TeleopCore commit 260f7660 / PR #467, backported to
 # release/1.2.x). The `rc1` suffix is required to opt pip into pre-release
 # resolution; without it pip would fall back to 1.1.x since no stable 1.2.x
-# wheel has been published yet.
-RUN /isaac-sim/python.sh -m pip install "isaacteleop~=1.2.0rc1" --extra-index-url https://pypi.nvidia.com
+# wheel has been published yet. Version 1.2.106 is needed because it contains
+# the automatic hand-tracking fixes.
+RUN /isaac-sim/python.sh -m pip install "isaacteleop~=1.2.106rc1" --extra-index-url https://pypi.nvidia.com
 
 # Install isaaclab_newton's [all] extra so its pinned mujoco / mujoco-warp / newton
 # versions take effect. The earlier `isaaclab*` loop above and `isaaclab.sh -i`
