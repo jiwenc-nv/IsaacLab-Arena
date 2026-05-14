@@ -54,9 +54,12 @@ def _build_h2_pink_pipeline():
         zero_out_xy_rotation=False,
         use_wrist_rotation=True,
         use_wrist_position=True,
-        target_offset_roll=45.0,
-        target_offset_pitch=180.0,
+        target_offset_roll=90.0,
+        target_offset_pitch=90.0,
         target_offset_yaw=-90.0,
+        target_offset_z=0.05,
+        target_offset_x=0.0,
+        target_offset_y=0.0,
     )
     left_se3 = Se3AbsRetargeter(left_se3_cfg, name="left_ee_pose")
     connected_left_se3 = left_se3.connect(
@@ -68,9 +71,12 @@ def _build_h2_pink_pipeline():
         zero_out_xy_rotation=False,
         use_wrist_rotation=True,
         use_wrist_position=True,
-        target_offset_roll=-135.0,
-        target_offset_pitch=0.0,
+        target_offset_roll=-90.0,
+        target_offset_pitch=-90.0,
         target_offset_yaw=90.0,
+        target_offset_z=0.05,
+        target_offset_x=0.0,
+        target_offset_y=0.0,
     )
     right_se3 = Se3AbsRetargeter(right_se3_cfg, name="right_ee_pose")
     connected_right_se3 = right_se3.connect(
