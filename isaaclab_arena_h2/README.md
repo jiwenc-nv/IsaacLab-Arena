@@ -74,6 +74,20 @@ python isaaclab_arena/evaluation/policy_runner.py \
   --embodiment h2_pink
 ```
 
+```bash
+# Same as the first but with live values adjustment and debugging.
+# Create isaaclab_arena_h2/teleop/data/configs/h2_live_gains.yaml first.
+python isaaclab_arena/scripts/imitation_learning/teleop.py \
+  --live_gains_yaml isaaclab_arena_h2/teleop/data/configs/h2_live_gains.yaml \
+  --visualize_teleop_hand_pose \
+  --viz kit \
+  --device cpu \
+  h2_teleop \
+  --teleop_device openxr \
+  --object brown_box \
+  --destination blue_sorting_bin
+```
+
 ## Asset Setup
 
 Assets are **not committed** to this branch. You need to place them manually.
